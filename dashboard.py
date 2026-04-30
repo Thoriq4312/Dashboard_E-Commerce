@@ -65,11 +65,6 @@ if filtered_orders.empty:
 # =========================
 st.subheader('Daily Orders')
 
-# filter tahun 2017
-filtered_orders = orders_payments[
-    orders_payments["order_purchase_timestamp"].dt.year == 2017
-]
-
 # resample harian
 daily_orders_df = filtered_orders.resample(
     rule='D',
@@ -96,7 +91,7 @@ with col1:
 
 with col2:
     total_revenue = daily_orders_df["revenue"].sum()
-    st.metric("Total Revenue", value=f"Rp {total_revenue:,.0f}")
+    st.metric("Total Revenue", value=f"{total_revenue:,.0f}")
 
 # =========================
 # PLOT
@@ -126,7 +121,8 @@ st.pyplot(fig)
 # =========================
 st.subheader("Distribusi Pelanggan Berdasarkan Kota")
 
-city = customers.groupby(by="customer_city").customer_id.nunique().reset_index()
+city = filtered_orders.merge(customers, on="customer_id") \
+    .groupby("customer_city")["customer_id"].nunique().reset_index()
 city.rename(columns={"customer_id": "customer_count"}, inplace=True)
 
 top_city = city.sort_values(by="customer_count", ascending=False).head()
